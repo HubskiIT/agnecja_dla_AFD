@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+:root {
+  /* Brand Colors */
+  --color-brand-black: #050505;
+  --color-brand-dark: #0A0A0A;
+  --color-brand-purple: #7C3AED;
+  --color-brand-purple-dark: #5B21B6;
+  --color-brand-accent: #C4B5FD;
+
+  /* Semantic Colors */
+  --background: var(--color-brand-black);
+  --foreground: #EDEDED;
+  --card-bg: rgba(23, 23, 23, 0.6);
+  --border: rgba(255, 255, 255, 0.1);
+  --muted: #404040;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card-bg);
+  --color-border: var(--border);
+  --color-brand-black: var(--color-brand-black);
+  --color-brand-purple: var(--color-brand-purple);
+  --color-brand-accent: var(--color-brand-accent);
+  --color-muted: var(--muted);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 85% 10%, rgba(91, 33, 182, 0.08) 0%, transparent 40%);
+  min-height: 100vh;
+}
+
+/* Utilities */
+.glass {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+.glass-hover {
+  transition: all 0.2s ease;
+}
+
+.glass-hover:hover {
+  background: rgba(30, 30, 30, 0.8);
+  border-color: rgba(124, 58, 237, 0.3);
+  transform: translateY(-1px);
+}

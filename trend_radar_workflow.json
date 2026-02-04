@@ -1,0 +1,206 @@
+{
+    "name": "TrendRadar - Viral Scraper",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "hours",
+                            "triggerAtHour": 8
+                        }
+                    ]
+                }
+            },
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1.2,
+            "position": [
+                0,
+                0
+            ],
+            "id": "schedule-trigger",
+            "name": "Daily at 8 AM"
+        },
+        {
+            "parameters": {
+                "url": "https://api.firecrawl.dev/v0/search",
+                "method": "POST",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpHeaderAuth",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "query",
+                            "value": "trending AI automation business tools 2026 viral"
+                        },
+                        {
+                            "name": "limit",
+                            "value": 5
+                        },
+                        {
+                            "name": "scrapeOptions",
+                            "value": "={{ {\"formats\": [\"markdown\"]} }}"
+                        }
+                    ]
+                }
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                220,
+                0
+            ],
+            "id": "firecrawl-api",
+            "name": "Firecrawl Search",
+            "notes": "Requires Firecrawl API Key in Header 'Authorization': 'Bearer YOUR_KEY'"
+        },
+        {
+            "parameters": {
+                "fieldToSplitOut": "data",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.itemLists",
+            "typeVersion": 3,
+            "position": [
+                440,
+                0
+            ],
+            "id": "split-results",
+            "name": "Split Results"
+        },
+        {
+            "parameters": {
+                "table": {
+                    "__rl": true,
+                    "value": "ideas",
+                    "mode": "list",
+                    "cachedResultName": "ideas"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "title": "={{ $json.title }}",
+                        "description": "={{ $json.description }}",
+                        "url": "={{ $json.url }}",
+                        "source": "TrendRadar (n8n)",
+                        "platform": "Web",
+                        "status": "new"
+                    },
+                    "matchingColumns": [],
+                    "schema": [
+                        {
+                            "id": "title",
+                            "displayName": "title",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": false
+                        },
+                        {
+                            "id": "description",
+                            "displayName": "description",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": false
+                        },
+                        {
+                            "id": "url",
+                            "displayName": "url",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": false
+                        },
+                        {
+                            "id": "source",
+                            "displayName": "source",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": false
+                        },
+                        {
+                            "id": "platform",
+                            "displayName": "platform",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": false
+                        },
+                        {
+                            "id": "status",
+                            "displayName": "status",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": false
+                        }
+                    ]
+                }
+            },
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                660,
+                0
+            ],
+            "id": "supabase-insert",
+            "name": "Save to Supabase",
+            "credentials": {
+                "supabaseApi": {
+                    "id": "YOUR_SUPABASE_CRED_ID",
+                    "name": "Supabase account"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "Daily at 8 AM": {
+            "main": [
+                [
+                    {
+                        "node": "Firecrawl Search",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Firecrawl Search": {
+            "main": [
+                [
+                    {
+                        "node": "Split Results",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Split Results": {
+            "main": [
+                [
+                    {
+                        "node": "Save to Supabase",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

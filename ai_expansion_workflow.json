@@ -1,0 +1,152 @@
+{
+    "name": "AI Content Expansion (TrendRadar)",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "expand-idea",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                0,
+                0
+            ],
+            "id": "webhook-trigger",
+            "name": "Webhook (Receive Idea)"
+        },
+        {
+            "parameters": {
+                "url": "={{ $json.body.url }}",
+                "formats": [
+                    "markdown"
+                ],
+                "onlyMainContent": true
+            },
+            "type": "firecrawl-mcp.firecrawl_scrape",
+            "typeVersion": 1,
+            "position": [
+                220,
+                0
+            ],
+            "id": "firecrawl-scrape",
+            "name": "Firecrawl Scrape"
+        },
+        {
+            "parameters": {
+                "model": "gpt-4o",
+                "prompt": {
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": "You are a viral social media content expert at AutoFlow Digital. \nYour goal is to take a raw content source (article, video transcript, or idea) and turn it into a high-converting social media post.\n\nPlatform: {{ $node[\"Webhook (Receive Idea)\"].json.body.platform }}\nTarget Audience: Business Owners, Entrepreneurs looking to automate.\nTone: Professional, Insightful, Direct, slightly contrarian."
+                        },
+                        {
+                            "role": "user",
+                            "content": "SOURCE TITLE: {{ $node[\"Webhook (Receive Idea)\"].json.body.title }}\nSOURCE CONTEXT: {{ $node[\"Webhook (Receive Idea)\"].json.body.description }}\n\nSCRAPED CONTENT:\n{{ $json.markdown }}\n\nTASK:\nCreate a draft post for {{ $node[\"Webhook (Receive Idea)\"].json.body.platform }}.\nInclude:\n1. HOOK (Grab attention in 3 seconds)\n2. MAIN SCRIPT/BODY (Educational value, 3-5 bullet points)\n3. CTA (Call To Action -> Book Consultation)\n4. VISUAL DIRECTIVE (What should be on screen/image?)\n5. HASHTAGS\n\nReturn JSON: { \"hook\": \"...\", \"content\": \"...\", \"visuals\": \"...\", \"hashtags\": [...] }"
+                        }
+                    ]
+                },
+                "options": {
+                    "responseFormat": "json_object"
+                }
+            },
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                440,
+                0
+            ],
+            "id": "openai-generate",
+            "name": "AI Generator (GPT-4o)"
+        },
+        {
+            "parameters": {
+                "tableId": "posts",
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "title": "={{ $node[\"Webhook (Receive Idea)\"].json.body.title }}",
+                        "content": "={{ $json.content }} \n\nHOOK: {{ $json.hook }}\n\nVISUAL: {{ $json.visuals }}",
+                        "platform": "={{ $node[\"Webhook (Receive Idea)\"].json.body.platform }}",
+                        "status": "draft",
+                        "hashtags": "={{ $json.hashtags }}",
+                        "ai_caption_draft": "={{ $json.content }}"
+                    },
+                    "matchingColumns": [],
+                    "schemaId": "public"
+                }
+            },
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                660,
+                0
+            ],
+            "id": "supabase-insert",
+            "name": "Save Draft to Supabase"
+        },
+        {
+            "parameters": {
+                "tableId": "ideas",
+                "updateKey": "id",
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "id": "={{ $node[\"Webhook (Receive Idea)\"].json.body.id }}",
+                        "status": "processed"
+                    }
+                }
+            },
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                660,
+                200
+            ],
+            "id": "update-idea-status",
+            "name": "Mark Idea Processed"
+        }
+    ],
+    "connections": {
+        "Webhook (Receive Idea)": {
+            "main": [
+                [
+                    {
+                        "node": "Firecrawl Scrape",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Firecrawl Scrape": {
+            "main": [
+                [
+                    {
+                        "node": "AI Generator (GPT-4o)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Generator (GPT-4o)": {
+            "main": [
+                [
+                    {
+                        "node": "Save Draft to Supabase",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Mark Idea Processed",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}
