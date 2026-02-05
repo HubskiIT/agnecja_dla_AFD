@@ -1,0 +1,133 @@
+{
+    "name": "Social Media Autopilot (Phase 3)",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "social-media-pilot",
+                "options": {}
+            },
+            "name": "Webhook Trigger",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                250,
+                300
+            ],
+            "webhookId": "social-media-pilot"
+        },
+        {
+            "parameters": {
+                "model": "gpt-4o",
+                "messages": {
+                    "values": [
+                        {
+                            "content": "=Analyze the following research trends for the Polish market: {{$node[\"Webhook Trigger\"].json[\"body\"][\"research_summary\"]}}\n\nCreate a content strategy for this week focusing on 'Client Acquisition' for an AI Automation Agency. \n\nOutput JSON with fields: \n- linkedin_post (long, professional)\n- instagram_caption (short, engaging)\n- instagram_image_prompt\n- facebook_post (community focused)\n- youtube_script (educational, 60s)\n- tiktok_script (viral hook)\n- topic_summary"
+                        }
+                    ]
+                },
+                "jsonOutput": true
+            },
+            "name": "AI Strategist (GPT-4o)",
+            "type": "@n8n/n8n-nodes-langchain.openAi",
+            "typeVersion": 1,
+            "position": [
+                500,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "tableId": "ideas",
+                "fieldsUi": {
+                    "fieldValues": [
+                        {
+                            "fieldId": "content",
+                            "fieldValue": "={{$node[\"AI Strategist (GPT-4o)\"].json[\"linkedin_post\"]}}"
+                        },
+                        {
+                            "fieldId": "platform",
+                            "fieldValue": "linkedin"
+                        },
+                        {
+                            "fieldId": "status",
+                            "fieldValue": "draft"
+                        },
+                        {
+                            "fieldId": "title",
+                            "fieldValue": "LI: {{$node[\"AI Strategist (GPT-4o)\"].json[\"topic_summary\"]}}"
+                        }
+                    ]
+                }
+            },
+            "name": "Save LinkedIn Draft",
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                750,
+                200
+            ]
+        },
+        {
+            "parameters": {
+                "tableId": "ideas",
+                "fieldsUi": {
+                    "fieldValues": [
+                        {
+                            "fieldId": "content",
+                            "fieldValue": "={{$node[\"AI Strategist (GPT-4o)\"].json[\"instagram_caption\"]}} \n\nPROMPT: {{$node[\"AI Strategist (GPT-4o)\"].json[\"instagram_image_prompt\"]}}"
+                        },
+                        {
+                            "fieldId": "platform",
+                            "fieldValue": "instagram"
+                        },
+                        {
+                            "fieldId": "status",
+                            "fieldValue": "draft"
+                        },
+                        {
+                            "fieldId": "title",
+                            "fieldValue": "IG: {{$node[\"AI Strategist (GPT-4o)\"].json[\"topic_summary\"]}}"
+                        }
+                    ]
+                }
+            },
+            "name": "Save Instagram Draft",
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                750,
+                400
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "AI Strategist (GPT-4o)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Strategist (GPT-4o)": {
+            "main": [
+                [
+                    {
+                        "node": "Save LinkedIn Draft",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Save Instagram Draft",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

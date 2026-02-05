@@ -53,15 +53,46 @@ export default function IdeasPage() {
                     {ideas.map((idea) => (
                         <div key={idea.id} className="glass p-6 rounded-xl flex flex-col md:flex-row justify-between items-start gap-4 group hover:border-brand-purple/50 transition-colors">
                             <div>
-                                <div className="flex items-center gap-2 mb-2">
+                                <div className="flex items-center gap-2 mb-2 flex-wrap">
                                     <span className="text-xs font-mono uppercase bg-brand-purple/20 text-brand-purple px-2 py-1 rounded">
                                         {idea.platform || 'Web'}
                                     </span>
+                                    {idea.format && (
+                                        <span className="text-xs font-semibold bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-300 px-2 py-1 rounded border border-pink-500/30">
+                                            {idea.format === 'Reel' && '🎥'}
+                                            {idea.format === 'Carousel' && '🖼️'}
+                                            {idea.format === 'Static' && '📸'}
+                                            {idea.format === 'Text Post' && '📝'}
+                                            {idea.format === 'Short Video' && '⚡'}
+                                            {idea.format === 'Long Video' && '🎬'}
+                                            {idea.format === 'PDF Guide' && '📄'}
+                                            {idea.format === 'Image Post' && '🌄'}
+                                            {idea.format === 'Poll' && '📊'}
+                                            {' '}{idea.format}
+                                        </span>
+                                    )}
+                                    {idea.scheduled_date && (
+                                        <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded border border-blue-500/30">
+                                            📅 {new Date(idea.scheduled_date).toLocaleDateString('pl-PL')}
+                                        </span>
+                                    )}
                                     <span className="text-xs text-gray-500">{new Date(idea.created_at).toLocaleDateString()}</span>
-                                    <span className="text-xs text-gray-600">Source: {idea.source}</span>
+                                    {idea.source && <span className="text-xs text-gray-600">Source: {idea.source}</span>}
                                 </div>
                                 <h2 className="text-xl font-semibold text-white">{idea.title}</h2>
-                                <p className="text-gray-400 mt-2 line-clamp-2 max-w-3xl">{idea.description}</p>
+                                <p className="text-gray-400 mt-2 line-clamp-2 max-w-3xl">{idea.description || idea.content}</p>
+                                {idea.creation_details && (
+                                    <details className="mt-3 text-sm">
+                                        <summary className="cursor-pointer text-brand-purple hover:text-brand-purple-light transition-colors">
+                                            🎬 Instrukcje tworzenia
+                                        </summary>
+                                        <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/10 text-gray-300">
+                                            {typeof idea.creation_details === 'string'
+                                                ? idea.creation_details
+                                                : JSON.parse(idea.creation_details).instructions || 'Brak instrukcji'}
+                                        </div>
+                                    </details>
+                                )}
                                 {idea.url && (
                                     <a href={idea.url} target="_blank" className="text-xs text-blue-400 hover:underline mt-2 block">View Original Source</a>
                                 )}
